@@ -6,6 +6,7 @@ import Contact from './pages/Contact';
 import BecameAnAgent from './pages/BecameAnAgent';
 import NotFound from './pages/NotFound';
 import Footer from './components/Footer';
+import ServicesPage from './pages/ServicesPage';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/became-an-agent" element={<BecameAnAgent />} />
         <Route path="*" element={<NotFound />} />
+        <Route path="/services/*" element={<ServicesPage />} /> {/* Services page with nested routes */}
       </Routes>
       <Footer />
     </>

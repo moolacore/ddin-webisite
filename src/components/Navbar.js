@@ -123,7 +123,8 @@ function Navbar() {
 
               {/* Become an Agent */}
               <li><Link to="/became-an-agent">Become an Agent</Link></li>
-
+              {/* Services */}
+              <li><Link to="/services">Services</Link></li>
               {/* Contact */}
               <li><Link to="/contact">Contact Us</Link></li>
             </ul>
