@@ -132,7 +132,7 @@ function Navbar() {
             {/* Right side - Join Now */}
             <ul className="nav-menu nav-menu-social align-to-right">
               <li className="list-buttons light ms-2">
-                <Link to="/agent/profile">
+                <Link to="https://ee.kobotoolbox.org/x/a8ESAIFG" className="btn btn-info" target="_blank" rel="noopener noreferrer">
                   <i className="fas fa-sign-in-alt me-2"></i>Join Now
                 </Link>
               </li>

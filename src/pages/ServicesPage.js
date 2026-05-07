@@ -1,59 +1,135 @@
 import { useState, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { fetchServices, initiatePayment, checkPaymentStatus } from "../services/api";
 
-// ─── Individual Service Card ──────────────────────────────
+// ─── Fonts (add to your index.html or global CSS) ─────────
+// <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+
+// ─── Styles ───────────────────────────────────────────────
+const styles = {
+  root: {
+    fontFamily: "'DM Sans', sans-serif",
+    padding: "2rem 1rem",
+    maxWidth: "900px",
+    margin: "0 auto",
+  },
+  eyebrow: {
+    fontSize: "11px",
+    letterSpacing: "0.12em",
+    textTransform: "uppercase",
+    color: "var(--color-text-tertiary)",
+    margin: "0 0 8px",
+  },
+  pageTitle: {
+    fontFamily: "'Instrument Serif', serif",
+    fontSize: "32px",
+    fontWeight: 400,
+    color: "var(--color-text-primary)",
+    margin: "0 0 6px",
+    lineHeight: 1.15,
+  },
+  pageSubtitle: {
+    fontSize: "14px",
+    color: "var(--color-text-secondary)",
+    fontWeight: 300,
+    margin: "0 0 2rem",
+  },
+  grid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+    gap: "12px",
+  },
+  skeletonCard: {
+    height: "160px",
+    borderRadius: "var(--border-radius-lg)",
+    background: "var(--color-background-secondary)",
+    animation: "pulse 1.4s ease-in-out infinite alternate",
+  },
+  errorBox: {
+    padding: "1rem",
+    borderRadius: "var(--border-radius-md)",
+    background: "var(--color-background-danger)",
+    color: "var(--color-text-danger)",
+    fontSize: "14px",
+  },
+};
+
+// ─── Service Card ─────────────────────────────────────────
 function ServiceCard({ service, onSelect }) {
+  const [hovered, setHovered] = useState(false);
+
   return (
-    <div
-      onClick={() => onSelect(service)}
-      style={{
-        background: "var(--color-background-primary)",
-        border: "0.5px solid var(--color-border-tertiary)",
-        borderRadius: "var(--border-radius-lg)",
-        padding: "1.5rem",
-        cursor: "pointer",
-        transition: "border-color 0.2s, transform 0.15s",
-        display: "flex",
-        flexDirection: "column",
-        gap: "12px",
-      }}
-      onMouseEnter={e => {
-        e.currentTarget.style.borderColor = "var(--color-border-primary)";
-        e.currentTarget.style.transform = "translateY(-2px)";
-      }}
-      onMouseLeave={e => {
-        e.currentTarget.style.borderColor = "var(--color-border-tertiary)";
-        e.currentTarget.style.transform = "translateY(0)";
-      }}
-    >
-      <span style={{ fontSize: "24px" }}>{service.icon}</span>
-      <div>
-        <p style={{ fontWeight: 500, fontSize: "15px", margin: "0 0 4px" }}>
-          {service.name}
-        </p>
-        <p style={{ fontSize: "13px", color: "var(--color-text-secondary)", margin: 0, lineHeight: 1.5 }}>
-          {service.description}
-        </p>
-      </div>
-      <div style={{ marginTop: "auto", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <span style={{ fontWeight: 500, fontSize: "14px" }}>
-          {Number(service.price).toLocaleString()} RWF
-        </span>
-        <span style={{
-          fontSize: "12px",
-          background: "var(--color-background-info)",
-          color: "var(--color-text-info)",
-          padding: "4px 10px",
+    <>
+      <style>{`@keyframes pulse { from { opacity: 1 } to { opacity: 0.5 } }`}</style>
+      <div
+        onClick={() => onSelect(service)}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        style={{
+          background: "var(--color-background-primary)",
+          border: `0.5px solid ${hovered ? "var(--color-border-primary)" : "var(--color-border-tertiary)"}`,
+          borderRadius: "var(--border-radius-lg)",
+          padding: "1.25rem",
+          cursor: "pointer",
+          transition: "border-color 0.18s, transform 0.15s",
+          transform: hovered ? "translateY(-3px)" : "translateY(0)",
+          display: "flex",
+          flexDirection: "column",
+          gap: "10px",
+          position: "relative",
+          overflow: "hidden",
+        }}
+      >
+        {/* Yellow top accent — appears on hover */}
+        <div style={{
+          position: "absolute", top: 0, left: 0, right: 0, height: "3px",
+          background: "#FFCB00",
+          opacity: hovered ? 1 : 0,
+          transition: "opacity 0.2s",
+        }} />
+
+        {/* Icon tile */}
+        <div style={{
+          width: "40px", height: "40px",
           borderRadius: "var(--border-radius-md)",
+          background: "var(--color-background-secondary)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: "20px",
         }}>
-          Select
-        </span>
+          {service.icon}
+        </div>
+
+        <div>
+          <p style={{ fontWeight: 500, fontSize: "14px", margin: "0 0 3px", color: "var(--color-text-primary)" }}>
+            {service.name}
+          </p>
+          <p style={{ fontSize: "12px", color: "var(--color-text-secondary)", margin: 0, lineHeight: 1.5, fontWeight: 300 }}>
+            {service.description}
+          </p>
+        </div>
+
+        <div style={{
+          marginTop: "auto",
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          paddingTop: "10px",
+          borderTop: "0.5px solid var(--color-border-tertiary)",
+        }}>
+          <span style={{ fontSize: "14px", fontWeight: 500, color: "var(--color-text-primary)" }}>
+            {Number(service.price).toLocaleString()} RWF
+          </span>
+          <span style={{ fontSize: "11px", fontWeight: 500, letterSpacing: "0.08em", color: "var(--color-text-secondary)", textTransform: "uppercase" }}>
+            Select →
+          </span>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 
 // ─── Payment Modal ─────────────────────────────────────────
+// Uses createPortal to mount directly on document.body.
+// This escapes any parent CSS transform, overflow:hidden, or
+// stacking context that would clip or hide the backdrop.
 function PaymentModal({ service, onClose }) {
   const [step, setStep] = useState("phone"); // phone | waiting | success | failed
   const [phone, setPhone] = useState("");
@@ -62,7 +138,19 @@ function PaymentModal({ service, onClose }) {
   const [referenceId, setReferenceId] = useState(null);
   const [pollCount, setPollCount] = useState(0);
 
-  // Poll payment status every 3 seconds
+  // Lock body scroll while open
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = ""; };
+  }, []);
+
+  // Close on Escape key
+  useEffect(() => {
+    const handler = (e) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [onClose]);
+
   const pollStatus = useCallback(async (refId) => {
     try {
       const status = await checkPaymentStatus(refId);
@@ -71,13 +159,12 @@ function PaymentModal({ service, onClose }) {
       } else if (status === "FAILED") {
         setStep("failed");
       } else {
-        // Still pending — check again after 3s (max 10 tries = 30s)
         setPollCount(c => {
           if (c < 10) {
             setTimeout(() => pollStatus(refId), 3000);
             return c + 1;
           }
-          setStep("failed"); // timed out
+          setStep("failed");
           return c;
         });
       }
@@ -98,7 +185,6 @@ function PaymentModal({ service, onClose }) {
       const result = await initiatePayment({ serviceId: service.id, phoneNumber: clean });
       setReferenceId(result.referenceId);
       setStep("waiting");
-      // Start polling after 5s (give user time to see prompt on phone)
       setTimeout(() => pollStatus(result.referenceId), 5000);
     } catch (err) {
       setError(err.message || "Something went wrong. Try again.");
@@ -107,158 +193,284 @@ function PaymentModal({ service, onClose }) {
     }
   };
 
-  return (
-    <div
-      style={{
-        position: "fixed", inset: 0, zIndex: 1000,
-        background: "rgba(0,0,0,0.45)",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        padding: "1rem",
-      }}
-      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
-    >
-      <div style={{
-        background: "var(--color-background-primary)",
-        borderRadius: "var(--border-radius-lg)",
-        border: "0.5px solid var(--color-border-tertiary)",
-        width: "100%", maxWidth: "440px",
-        padding: "1.75rem",
-      }}>
+  const resetToPhone = () => { setStep("phone"); setError(""); };
 
-        {/* Header */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1.5rem" }}>
-          <div>
-            <p style={{ fontWeight: 500, fontSize: "16px", margin: "0 0 4px" }}>Pay with MoMo</p>
-            <p style={{ fontSize: "13px", color: "var(--color-text-secondary)", margin: 0 }}>
-              {service.name} — {Number(service.price).toLocaleString()} RWF
-            </p>
-          </div>
-          <button onClick={onClose} style={{
-            background: "none", border: "none", cursor: "pointer",
-            fontSize: "18px", color: "var(--color-text-secondary)", padding: "0 4px",
-          }}>✕</button>
-        </div>
+  const modalContent = (
+    <>
+      <style>{`
+        @keyframes scaleIn {
+          from { transform: scale(0.95); opacity: 0; }
+          to   { transform: scale(1);    opacity: 1; }
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-        {/* Step: Enter phone */}
-        {step === "phone" && (
-          <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-            <div>
-              <label style={{ fontSize: "13px", color: "var(--color-text-secondary)", display: "block", marginBottom: "6px" }}>
-                MoMo Phone Number
-              </label>
-              <input
-                type="tel"
-                placeholder="e.g. 0781234567"
-                value={phone}
-                onChange={e => setPhone(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && handlePay()}
-                style={{
-                  width: "100%", padding: "10px 12px", fontSize: "15px",
-                  border: "0.5px solid var(--color-border-secondary)",
-                  borderRadius: "var(--border-radius-md)",
-                  background: "var(--color-background-secondary)",
-                  color: "var(--color-text-primary)",
-                  boxSizing: "border-box",
-                }}
-              />
-              {error && (
-                <p style={{ fontSize: "12px", color: "var(--color-text-danger)", margin: "6px 0 0" }}>
-                  {error}
-                </p>
-              )}
-            </div>
-            <p style={{ fontSize: "12px", color: "var(--color-text-secondary)", margin: 0, lineHeight: 1.5 }}>
-              A payment prompt will appear on your phone. Accept it to complete the transaction.
-            </p>
+        .momo-backdrop {
+          position: fixed;
+          top: 0; left: 0;
+          width: 100vw; height: 100vh;
+          z-index: 9999;
+          background: rgba(0, 0, 0, 0.55);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .momo-sheet {
+          width: 100%;
+          max-width: 480px;
+          margin: 0 1rem;
+          background: var(--color-background-primary, #fff);
+          border-radius: 16px;
+          border: 0.5px solid var(--color-border-tertiary, #e5e5e5);
+          animation: scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+      `}</style>
+
+      <div
+        className="momo-backdrop"
+        onMouseDown={e => { if (e.target === e.currentTarget) onClose(); }}
+      >
+        <div className="momo-sheet">
+
+          <div style={{ padding: "1.5rem 1.75rem 2.25rem", position: "relative" }}>
+
+            {/* Close button */}
             <button
-              onClick={handlePay}
-              disabled={loading}
+              onClick={onClose}
+              aria-label="Close"
               style={{
-                padding: "10px", fontWeight: 500, fontSize: "14px",
-                background: loading ? "var(--color-background-secondary)" : "#FFCB00",
-                color: "#333",
-                border: "none", borderRadius: "var(--border-radius-md)",
-                cursor: loading ? "not-allowed" : "pointer",
+                position: "absolute", top: "1.25rem", right: "1.5rem",
+                background: "var(--color-background-secondary, #f5f5f5)",
+                border: "none", cursor: "pointer",
+                width: "28px", height: "28px", borderRadius: "50%",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                color: "var(--color-text-secondary, #666)", fontSize: "14px",
+                lineHeight: 1,
               }}
-            >
-              {loading ? "Sending request…" : `Pay ${Number(service.price).toLocaleString()} RWF`}
-            </button>
-          </div>
-        )}
+            >✕</button>
 
-        {/* Step: Waiting for approval */}
-        {step === "waiting" && (
-          <div style={{ textAlign: "center", padding: "1.5rem 0", display: "flex", flexDirection: "column", alignItems: "center", gap: "1rem" }}>
-            <div style={{
-              width: "48px", height: "48px", border: "3px solid #FFCB00",
-              borderTop: "3px solid transparent", borderRadius: "50%",
-              animation: "spin 1s linear infinite",
-            }} />
-            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-            <p style={{ fontWeight: 500, margin: 0 }}>Waiting for your approval</p>
-            <p style={{ fontSize: "13px", color: "var(--color-text-secondary)", margin: 0, lineHeight: 1.5 }}>
-              Check your phone and enter your MoMo PIN to confirm the payment of <strong>{Number(service.price).toLocaleString()} RWF</strong>.
-            </p>
-            <p style={{ fontSize: "11px", color: "var(--color-text-tertiary)", margin: 0 }}>
-              Ref: {referenceId?.slice(0, 8)}…
-            </p>
-          </div>
-        )}
+            {/* ── Step: Phone ── */}
+            {step === "phone" && (
+              <div>
+                {/* Service summary */}
+                <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "1.5rem" }}>
+                  <span style={{ fontSize: "28px" }}>{service.icon}</span>
+                  <div>
+                    <p style={{
+                      fontFamily: "'Instrument Serif', serif",
+                      fontSize: "20px", fontWeight: 400,
+                      margin: "0 0 2px", color: "var(--color-text-primary, #111)",
+                    }}>
+                      {service.name}
+                    </p>
+                    <p style={{ fontSize: "13px", color: "var(--color-text-secondary, #666)", margin: 0, fontWeight: 300 }}>
+                      {Number(service.price).toLocaleString()} RWF
+                    </p>
+                  </div>
+                </div>
 
-        {/* Step: Success */}
-        {step === "success" && (
-          <div style={{ textAlign: "center", padding: "1.5rem 0", display: "flex", flexDirection: "column", alignItems: "center", gap: "1rem" }}>
-            <div style={{
-              width: "52px", height: "52px", borderRadius: "50%",
-              background: "var(--color-background-success)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: "24px",
-            }}>✓</div>
-            <p style={{ fontWeight: 500, fontSize: "16px", margin: 0, color: "var(--color-text-success)" }}>Payment Successful!</p>
-            <p style={{ fontSize: "13px", color: "var(--color-text-secondary)", margin: 0 }}>
-              Your payment for <strong>{service.name}</strong> has been received. We'll be in touch shortly.
-            </p>
-            <button onClick={onClose} style={{
-              padding: "10px 24px", fontWeight: 500, fontSize: "14px",
-              background: "#FFCB00", color: "#333", border: "none",
-              borderRadius: "var(--border-radius-md)", cursor: "pointer",
-            }}>
-              Done
-            </button>
-          </div>
-        )}
+                {/* Phone input */}
+                <label style={{
+                  fontSize: "12px", fontWeight: 500, letterSpacing: "0.07em",
+                  textTransform: "uppercase", color: "var(--color-text-secondary, #666)",
+                  display: "block", marginBottom: "8px",
+                }}>
+                  MoMo number
+                </label>
+                <div style={{
+                  display: "flex", alignItems: "stretch",
+                  border: "0.5px solid var(--color-border-secondary, #ccc)",
+                  borderRadius: "var(--border-radius-md, 8px)",
+                  overflow: "hidden",
+                  background: "var(--color-background-secondary, #f9f9f9)",
+                }}>
+                  <span style={{
+                    padding: "0 12px", fontSize: "14px",
+                    color: "var(--color-text-secondary, #666)",
+                    display: "flex", alignItems: "center",
+                    borderRight: "0.5px solid var(--color-border-tertiary, #e5e5e5)",
+                    fontWeight: 300, whiteSpace: "nowrap",
+                  }}>
+                    🇷🇼 +250
+                  </span>
+                  <input
+                    type="tel"
+                    placeholder="07X XXX XXXX"
+                    value={phone}
+                    maxLength={10}
+                    autoFocus
+                    onChange={e => setPhone(e.target.value)}
+                    onKeyDown={e => e.key === "Enter" && handlePay()}
+                    style={{
+                      flex: 1, border: "none", background: "transparent",
+                      padding: "11px 12px", fontSize: "15px",
+                      color: "var(--color-text-primary, #111)",
+                      fontFamily: "'DM Sans', sans-serif", outline: "none",
+                    }}
+                  />
+                </div>
 
-        {/* Step: Failed */}
-        {step === "failed" && (
-          <div style={{ textAlign: "center", padding: "1.5rem 0", display: "flex", flexDirection: "column", alignItems: "center", gap: "1rem" }}>
-            <div style={{
-              width: "52px", height: "52px", borderRadius: "50%",
-              background: "var(--color-background-danger)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: "24px",
-            }}>✕</div>
-            <p style={{ fontWeight: 500, fontSize: "16px", margin: 0, color: "var(--color-text-danger)" }}>Payment Failed</p>
-            <p style={{ fontSize: "13px", color: "var(--color-text-secondary)", margin: 0 }}>
-              The payment was not completed. Please try again or use a different number.
-            </p>
-            <div style={{ display: "flex", gap: "8px" }}>
-              <button onClick={onClose} style={{
-                padding: "10px 20px", fontSize: "14px",
-                background: "none", border: "0.5px solid var(--color-border-secondary)",
-                borderRadius: "var(--border-radius-md)", cursor: "pointer",
-                color: "var(--color-text-primary)",
-              }}>Cancel</button>
-              <button onClick={() => { setStep("phone"); setError(""); }} style={{
-                padding: "10px 20px", fontWeight: 500, fontSize: "14px",
-                background: "#FFCB00", color: "#333", border: "none",
-                borderRadius: "var(--border-radius-md)", cursor: "pointer",
-              }}>Try Again</button>
-            </div>
+                {error
+                  ? <p style={{ fontSize: "12px", color: "var(--color-text-danger, #c00)", margin: "8px 0 0" }}>{error}</p>
+                  : <p style={{ fontSize: "12px", color: "var(--color-text-tertiary, #999)", margin: "8px 0 0", fontWeight: 300 }}>
+                      A PIN prompt will appear on your phone to confirm.
+                    </p>
+                }
+
+                {/* Pay button */}
+                <button
+                  onClick={handlePay}
+                  disabled={loading}
+                  style={{
+                    width: "100%", marginTop: "1.25rem", padding: "13px",
+                    background: loading ? "var(--color-background-secondary, #f5f5f5)" : "#FFCB00",
+                    color: loading ? "var(--color-text-secondary, #888)" : "#1a1400",
+                    border: "none", borderRadius: "var(--border-radius-md, 8px)",
+                    cursor: loading ? "not-allowed" : "pointer",
+                    fontSize: "14px", fontWeight: 500, letterSpacing: "0.03em",
+                    fontFamily: "'DM Sans', sans-serif",
+                    transition: "opacity 0.15s",
+                    boxSizing: "border-box",
+                  }}
+                >
+                  {loading ? "Sending request…" : `Pay ${Number(service.price).toLocaleString()} RWF`}
+                </button>
+
+                {/* MoMo trust badge */}
+                <div style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "1rem", justifyContent: "center" }}>
+                  <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#FFCB00", display: "inline-block" }} />
+                  <span style={{ fontSize: "11px", color: "var(--color-text-tertiary, #999)", letterSpacing: "0.05em", textTransform: "uppercase" }}>
+                    Secured by MTN MoMo
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* ── Step: Waiting ── */}
+            {step === "waiting" && (
+              <div style={{ textAlign: "center", padding: "2rem 0 1.5rem" }}>
+                <div style={{
+                  width: "44px", height: "44px",
+                  border: "2px solid var(--color-border-tertiary, #e5e5e5)",
+                  borderTopColor: "#FFCB00",
+                  borderRadius: "50%",
+                  animation: "spin 0.8s linear infinite",
+                  margin: "0 auto 1.25rem",
+                }} />
+                <p style={{
+                  fontFamily: "'Instrument Serif', serif",
+                  fontSize: "20px", fontWeight: 400,
+                  margin: "0 0 8px", color: "var(--color-text-primary, #111)",
+                }}>
+                  Awaiting your approval
+                </p>
+                <p style={{ fontSize: "13px", color: "var(--color-text-secondary, #666)", margin: 0, fontWeight: 300, lineHeight: 1.6 }}>
+                  Check your phone and enter your MoMo PIN to confirm the payment of{" "}
+                  <strong>{Number(service.price).toLocaleString()} RWF</strong>.
+                </p>
+                <span style={{
+                  display: "inline-block", marginTop: "1rem",
+                  fontSize: "11px", color: "var(--color-text-tertiary, #999)",
+                  background: "var(--color-background-secondary, #f5f5f5)",
+                  padding: "4px 10px", borderRadius: "20px",
+                  letterSpacing: "0.05em",
+                }}>
+                  Ref: {referenceId?.slice(0, 10)}…
+                </span>
+              </div>
+            )}
+
+            {/* ── Step: Success ── */}
+            {step === "success" && (
+              <div style={{ textAlign: "center", padding: "2rem 0 1.5rem" }}>
+                <div style={{
+                  width: "56px", height: "56px", borderRadius: "50%",
+                  background: "var(--color-background-success, #d4edda)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  margin: "0 auto 1.25rem", fontSize: "22px",
+                }}>✓</div>
+                <p style={{
+                  fontFamily: "'Instrument Serif', serif",
+                  fontSize: "22px", fontWeight: 400,
+                  margin: "0 0 8px", color: "var(--color-text-success, #1a7a3c)",
+                }}>
+                  Payment received
+                </p>
+                <p style={{ fontSize: "13px", color: "var(--color-text-secondary, #666)", margin: "0 0 1.5rem", fontWeight: 300, lineHeight: 1.6 }}>
+                  Your payment for <strong>{service.name}</strong> is confirmed. We'll be in touch shortly.
+                </p>
+                <button
+                  onClick={onClose}
+                  style={{
+                    padding: "10px 24px", fontSize: "13px", fontWeight: 500,
+                    background: "#FFCB00", color: "#1a1400", border: "none",
+                    borderRadius: "var(--border-radius-md, 8px)", cursor: "pointer",
+                    fontFamily: "'DM Sans', sans-serif",
+                  }}
+                >
+                  Done
+                </button>
+              </div>
+            )}
+
+            {/* ── Step: Failed ── */}
+            {step === "failed" && (
+              <div style={{ textAlign: "center", padding: "2rem 0 1.5rem" }}>
+                <div style={{
+                  width: "56px", height: "56px", borderRadius: "50%",
+                  background: "var(--color-background-danger, #fde8e8)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  margin: "0 auto 1.25rem", fontSize: "22px",
+                }}>✕</div>
+                <p style={{
+                  fontFamily: "'Instrument Serif', serif",
+                  fontSize: "22px", fontWeight: 400,
+                  margin: "0 0 8px", color: "var(--color-text-danger, #c00)",
+                }}>
+                  Payment failed
+                </p>
+                <p style={{ fontSize: "13px", color: "var(--color-text-secondary, #666)", margin: "0 0 1.5rem", fontWeight: 300, lineHeight: 1.6 }}>
+                  The payment wasn't completed. Try again or use a different number.
+                </p>
+                <div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
+                  <button
+                    onClick={onClose}
+                    style={{
+                      padding: "10px 20px", fontSize: "13px",
+                      background: "none",
+                      border: "0.5px solid var(--color-border-secondary, #ccc)",
+                      borderRadius: "var(--border-radius-md, 8px)", cursor: "pointer",
+                      color: "var(--color-text-primary, #111)",
+                      fontFamily: "'DM Sans', sans-serif",
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={resetToPhone}
+                    style={{
+                      padding: "10px 20px", fontSize: "13px", fontWeight: 500,
+                      background: "#FFCB00", color: "#1a1400", border: "none",
+                      borderRadius: "var(--border-radius-md, 8px)", cursor: "pointer",
+                      fontFamily: "'DM Sans', sans-serif",
+                    }}
+                  >
+                    Try again
+                  </button>
+                </div>
+              </div>
+            )}
+
           </div>
-        )}
+        </div>
       </div>
-    </div>
+    </>
   );
+
+  // createPortal mounts the modal directly on document.body,
+  // completely outside the React component tree's DOM position.
+  // This fixes backdrop invisibility caused by parent elements
+  // with CSS transform, overflow:hidden, or z-index stacking contexts.
+  return createPortal(modalContent, document.body);
 }
 
 // ─── Main Page ─────────────────────────────────────────────
@@ -276,50 +488,32 @@ export default function ServicesPage() {
   }, []);
 
   return (
-    <div style={{ maxWidth: "900px", margin: "0 auto", padding: "2rem 1rem" }}>
-      {/* Page header */}
-      <div style={{ marginBottom: "2rem" }}>
-        <p style={{ fontWeight: 500, fontSize: "22px", margin: "0 0 6px" }}>Our Services</p>
-        <p style={{ fontSize: "14px", color: "var(--color-text-secondary)", margin: 0 }}>
-          Choose a service and pay instantly using MTN Mobile Money.
-        </p>
-      </div>
+    <div style={styles.root}>
+      <p style={styles.eyebrow}>What we offer</p>
+      <h1 style={styles.pageTitle}>Our Services</h1>
+      <p style={styles.pageSubtitle}>Choose a service — pay instantly with MTN Mobile Money.</p>
 
-      {/* Loading state */}
       {loading && (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: "16px" }}>
-          {[...Array(6)].map((_, i) => (
-            <div key={i} style={{
-              height: "160px", borderRadius: "var(--border-radius-lg)",
-              background: "var(--color-background-secondary)",
-              animation: "pulse 1.4s ease-in-out infinite alternate",
-            }} />
-          ))}
+        <>
           <style>{`@keyframes pulse { from { opacity: 1 } to { opacity: 0.5 } }`}</style>
-        </div>
+          <div style={styles.grid}>
+            {[...Array(6)].map((_, i) => (
+              <div key={i} style={styles.skeletonCard} />
+            ))}
+          </div>
+        </>
       )}
 
-      {/* Error state */}
-      {error && (
-        <div style={{
-          padding: "1rem", borderRadius: "var(--border-radius-md)",
-          background: "var(--color-background-danger)",
-          color: "var(--color-text-danger)", fontSize: "14px",
-        }}>
-          {error}
-        </div>
-      )}
+      {error && <div style={styles.errorBox}>{error}</div>}
 
-      {/* Services grid */}
       {!loading && !error && (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: "16px" }}>
+        <div style={styles.grid}>
           {services.map(s => (
             <ServiceCard key={s.id} service={s} onSelect={setSelectedService} />
           ))}
         </div>
       )}
 
-      {/* Payment Modal */}
       {selectedService && (
         <PaymentModal
           service={selectedService}
