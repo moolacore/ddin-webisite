@@ -3083,7 +3083,7 @@ nav a {
 }
 
 .header {
-    background: #fff;
+    background: #202a4e;
     position: relative;
     padding: 13px 0;
 }
@@ -5111,7 +5111,7 @@ footer.skin-dark-footer .footer-widget .ftp-info {
 		padding-right: 0px;
 	}
 	.nav-brand img {
-		max-width: 115px;
+		max-width: 40px;
 		position: relative;
 	}
 	footer .position-absolute.bottom-0.start-0 img {

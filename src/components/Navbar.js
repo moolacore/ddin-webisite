@@ -23,11 +23,12 @@ function Navbar() {
         <nav id="navigation" className="navigation navigation-landscape">
           <div className="nav-header">
             {/* Logo */}
-            <Link className="nav-brand static-logo" to="/">
-              <img src="/assets/img/logo-light.png" className="logo" alt="Logo" />
-            </Link>
-            <Link className="nav-brand fixed-logo" to="/">
-              <img src="/assets/img/logo.png" className="logo" alt="Logo" />
+            <Link className="nav-brand" to="/">
+              <img
+                src={isScrolled ? "/assets/img/logo.png" : "/assets/img/logo-light.png"}
+                className="logo"
+                alt="Logo"
+              />
             </Link>
 
             {/* Mobile toggle */}

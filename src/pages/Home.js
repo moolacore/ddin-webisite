@@ -11,25 +11,7 @@ function Home() {
       <Banner />
 
       {/* ====== Pay Services ====== */}
-      <section className="pt-8 pb-6" style={{ background: '#f8f8f6' }}>
-        <div className="container">
-          <div className="row justify-content-center mb-5">
-            <div className="col-xl-7 col-lg-8 col-md-10 text-center">
-              <div className="label text-success bg-light-success d-inline-flex rounded-4 mb-2 font--medium">
-                <span>pay services</span>
-              </div>
-              <h2 className="mb-3 lh-base">
-                Pay bills & services <span style={{ color: '#F8882B' }}>instantly</span>
-              </h2>
-              <p className="mb-0 fs-5 fw-light">
-                Water, electricity, taxes, telecom and more — all in one place through our agent network.
-              </p>
-            </div>
-          </div>
-          <DDINPaymentPage />
-        </div>
-      </section>
-      <div className="clearfix"></div>
+      <DDINPaymentPage />
 
       {/* ====== Who We Are ====== */}
       <section className="pt-8">

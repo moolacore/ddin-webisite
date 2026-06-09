@@ -33,6 +33,10 @@ function isLoggedIn() {
   return !!getToken();
 }
 
+// ─── Auto-auth credentials ────────────────────────────────────────────────────
+
+const AUTO_AUTH = { username: "User1", password: "User1@0123" };
+
 // ─── API layer ────────────────────────────────────────────────────────────────
 
 const DDIN = {
@@ -80,11 +84,6 @@ const DDIN = {
   getTransactionDetails: (txId) =>
     api.get(`/agency/thirdpartyagency/services/transaction/details/${txId}`),
 
-  getTransactionHistory: () =>
-    api.get("/agency/thirdpartyagency/services/transactions/history", {
-      headers: getAuthHeaders(),
-    }),
-
   initiateCollection: ({
     provider = "mtn",
     customerAccountNumber,
@@ -114,12 +113,6 @@ const DDIN = {
 
   getCollectionStatus: (operationId) =>
     api.get(`/thirdparty/collection/operation/${operationId}`, {
-      headers: getAuthHeaders(),
-    }),
-
-  getCollectionTransactions: (status = "success", limit = 50, offset = 0) =>
-    api.get("/thirdparty/collection/agent/transactions", {
-      params: { status, limit, offset },
       headers: getAuthHeaders(),
     }),
 };
@@ -590,122 +583,6 @@ function Spinner({ size = 28, color = "#1D9E75" }) {
   );
 }
 
-// ─── Login Panel ──────────────────────────────────────────────────────────────
-
-function LoginPanel({ service, onSuccess, onCancel }) {
-  const [creds, setCreds] = useState({ username: "", password: "" });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  const handleLogin = async () => {
-    if (!creds.username || !creds.password) {
-      setError("Enter your username and password.");
-      return;
-    }
-    setLoading(true);
-    setError("");
-    try {
-      const { data } = await DDIN.login(creds.username, creds.password);
-      const token =
-        data?.data?.accessToken ||
-        data?.data?.token ||
-        data?.accessToken ||
-        data?.token;
-      const refreshToken = data?.data?.refreshToken || data?.refreshToken;
-      if (!token) throw new Error("No token returned. Check credentials.");
-      saveTokens({ token, refreshToken });
-      onSuccess({ name: data?.data?.name || data?.name || creds.username });
-    } catch (err) {
-      setError(
-        err?.response?.data?.message || err.message || "Login failed.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div style={{ padding: 20 }}>
-      <div
-        style={{
-          background: "#F0F9FF",
-          border: "0.5px solid #BAE0F9",
-          borderRadius: 8,
-          padding: "10px 12px",
-          fontSize: 13,
-          color: "#185FA5",
-          marginBottom: 20,
-          display: "flex",
-          gap: 8,
-          alignItems: "flex-start",
-        }}
-      >
-        <span style={{ flexShrink: 0 }}>🔒</span>
-        <span>
-          Sign in to your agent account to complete this{" "}
-          <strong style={{ fontWeight: 500 }}>{service.name}</strong> payment.
-        </span>
-      </div>
-      {error && <div style={S.error}>{error}</div>}
-      <div style={{ marginBottom: 14 }}>
-        <label style={S.label}>Username</label>
-        <input
-          style={S.input}
-          type="text"
-          placeholder="e.g. cmahame"
-          value={creds.username}
-          onChange={(e) =>
-            setCreds((p) => ({ ...p, username: e.target.value }))
-          }
-          onFocus={focusStyle}
-          onBlur={blurStyle}
-          onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-          autoFocus
-        />
-      </div>
-      <div style={{ marginBottom: 20 }}>
-        <label style={S.label}>Password</label>
-        <input
-          style={S.input}
-          type="password"
-          placeholder="Enter password"
-          value={creds.password}
-          onChange={(e) =>
-            setCreds((p) => ({ ...p, password: e.target.value }))
-          }
-          onFocus={focusStyle}
-          onBlur={blurStyle}
-          onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-        />
-      </div>
-      <div style={{ display: "flex", gap: 10 }}>
-        <button
-          onClick={onCancel}
-          style={{ ...S.btn("transparent", "#6b6b67"), flex: 1 }}
-        >
-          ← Back
-        </button>
-        <button
-          onClick={handleLogin}
-          disabled={loading}
-          style={{
-            ...S.btn(),
-            flex: 2,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 8,
-            opacity: loading ? 0.6 : 1,
-          }}
-        >
-          {loading && <Spinner size={16} color="#fff" />}
-          {loading ? "Signing in…" : "Sign in & pay"}
-        </button>
-      </div>
-    </div>
-  );
-}
-
 // ─── Service Card ─────────────────────────────────────────────────────────────
 
 function ServiceCard({ service, onClick }) {
@@ -779,7 +656,7 @@ function ServiceCard({ service, onClick }) {
 
 // ─── Payment Modal ────────────────────────────────────────────────────────────
 
-function PaymentModal({ service, onClose, onUserLogin }) {
+function PaymentModal({ service, onClose, authReady }) {
   const c = COLOR_MAP[service.color] || COLOR_MAP.teal;
 
   const [step, setStep] = useState("form");
@@ -837,19 +714,6 @@ function PaymentModal({ service, onClose, onUserLogin }) {
       );
       setStep("form");
     }
-  };
-
-  const handleConfirmClick = () => {
-    if (!isLoggedIn()) {
-      setStep("login");
-    } else {
-      handlePay();
-    }
-  };
-
-  const handleLoginSuccess = (loggedInUser) => {
-    onUserLogin(loggedInUser);
-    handlePay();
   };
 
   const handlePay = async () => {
@@ -940,6 +804,29 @@ function PaymentModal({ service, onClose, onUserLogin }) {
     polling: "Waiting for MoMo confirmation…",
   };
 
+  // If auth isn't ready yet when user hits confirm, show brief inline wait
+  const handleConfirmClick = () => {
+    if (!isLoggedIn()) {
+      setStep("authwait");
+      const interval = setInterval(() => {
+        if (isLoggedIn()) {
+          clearInterval(interval);
+          handlePay();
+        }
+      }, 300);
+      // Give up after 10s
+      setTimeout(() => {
+        clearInterval(interval);
+        if (!isLoggedIn()) {
+          setError("Authentication not ready. Please try again in a moment.");
+          setStep("validated");
+        }
+      }, 10000);
+    } else {
+      handlePay();
+    }
+  };
+
   return (
     <div
       style={S.overlay}
@@ -1003,8 +890,8 @@ function PaymentModal({ service, onClose, onUserLogin }) {
           </button>
         </div>
 
-        {/* Loading state */}
-        {["validating", "paying", "polling"].includes(step) && (
+        {/* Loading states */}
+        {["validating", "paying", "polling", "authwait"].includes(step) && (
           <div style={{ textAlign: "center", padding: "52px 20px" }}>
             <div
               style={{
@@ -1016,7 +903,9 @@ function PaymentModal({ service, onClose, onUserLogin }) {
               <Spinner size={36} />
             </div>
             <p style={{ fontSize: 14, color: "#6b6b67" }}>
-              {STEP_LABELS[step]}
+              {step === "authwait"
+                ? "Authenticating…"
+                : STEP_LABELS[step]}
             </p>
             {step === "polling" && operationId && (
               <p
@@ -1214,15 +1103,6 @@ function PaymentModal({ service, onClose, onUserLogin }) {
           </div>
         )}
 
-        {/* Login gate */}
-        {step === "login" && (
-          <LoginPanel
-            service={service}
-            onSuccess={handleLoginSuccess}
-            onCancel={() => setStep("validated")}
-          />
-        )}
-
         {/* Success */}
         {step === "success" && (
           <div style={{ textAlign: "center", padding: "40px 20px" }}>
@@ -1319,204 +1199,81 @@ function PaymentModal({ service, onClose, onUserLogin }) {
   );
 }
 
-// ─── Transaction History Modal ────────────────────────────────────────────────
-
-function HistoryModal({ onClose }) {
-  const [txs, setTxs] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    DDIN.getTransactionHistory()
-      .then(({ data }) =>
-        setTxs(data?.data || data?.transactions || data || []),
-      )
-      .catch((err) =>
-        setError(err?.response?.data?.message || "Failed to load history."),
-      )
-      .finally(() => setLoading(false));
-    const onKey = (e) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
-
-  const statusColor = (s = "") => {
-    const v = s.toLowerCase();
-    if (["success", "successful", "completed"].includes(v)) return "#085041";
-    if (["failed", "error", "declined"].includes(v)) return "#A32D2D";
-    return "#854F0B";
-  };
-
-  return (
-    <div
-      style={S.overlay}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-    >
-      <div style={{ ...S.modal, maxWidth: 560 }}>
-        <div
-          style={{
-            padding: "20px 20px 14px",
-            borderBottom: "0.5px solid #e0ddd7",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <div style={{ fontSize: 16, fontWeight: 500, color: "#1a1a18" }}>
-            Transaction history
-          </div>
-          <button
-            onClick={onClose}
-            style={{
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              color: "#a09d98",
-              fontSize: 20,
-            }}
-          >
-            ✕
-          </button>
-        </div>
-        <div style={{ padding: 20 }}>
-          {loading && (
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                padding: 32,
-              }}
-            >
-              <Spinner />
-            </div>
-          )}
-          {error && <div style={S.error}>{error}</div>}
-          {!loading && !error && txs.length === 0 && (
-            <p
-              style={{
-                fontSize: 14,
-                color: "#a09d98",
-                textAlign: "center",
-                padding: "24px 0",
-              }}
-            >
-              No transactions found.
-            </p>
-          )}
-          {Array.isArray(txs) &&
-            txs.map((tx, i) => (
-              <div
-                key={tx.transactionId || tx.id || i}
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  padding: "10px 0",
-                  borderBottom: "0.5px solid #f0ede8",
-                }}
-              >
-                <div>
-                  <div
-                    style={{
-                      fontSize: 14,
-                      fontWeight: 500,
-                      color: "#1a1a18",
-                    }}
-                  >
-                    {tx.billerCode || tx.service || "Payment"}
-                  </div>
-                  {(tx.transactionId || tx.referenceId) && (
-                    <div
-                      style={{
-                        fontSize: 11,
-                        color: "#a09d98",
-                        marginTop: 2,
-                        fontFamily: "monospace",
-                      }}
-                    >
-                      {tx.transactionId || tx.referenceId}
-                    </div>
-                  )}
-                  {tx.createdAt && (
-                    <div
-                      style={{
-                        fontSize: 11,
-                        color: "#b0ada7",
-                        marginTop: 2,
-                      }}
-                    >
-                      {new Date(tx.createdAt).toLocaleString()}
-                    </div>
-                  )}
-                </div>
-                <div style={{ textAlign: "right" }}>
-                  <div
-                    style={{
-                      fontSize: 14,
-                      fontWeight: 500,
-                      color: "#1a1a18",
-                    }}
-                  >
-                    {Number(tx.amount || 0).toLocaleString()} {tx.ccy || "RWF"}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: 11,
-                      marginTop: 3,
-                      fontWeight: 500,
-                      textTransform: "capitalize",
-                      color: statusColor(tx.status),
-                    }}
-                  >
-                    {tx.status || "—"}
-                  </div>
-                </div>
-              </div>
-            ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function DDINPaymentPage() {
-  const [user, setUser] = useState(() =>
-    isLoggedIn() ? { name: "Agent" } : null,
-  );
+  const [authReady, setAuthReady] = useState(isLoggedIn());
   const [balance, setBalance] = useState(null);
   const [activeCategory, setActiveCategory] = useState("All");
   const [search, setSearch] = useState("");
   const [selectedService, setSelectedService] = useState(null);
-  const [showHistory, setShowHistory] = useState(false);
+
+  // ── Silent background authentication on mount ─────────────────────────────
+  useEffect(() => {
+    if (isLoggedIn()) {
+      setAuthReady(true);
+      fetchBalance();
+      return;
+    }
+    DDIN.login(AUTO_AUTH.username, AUTO_AUTH.password)
+      .then(({ data }) => {
+        const token =
+          data?.data?.accessToken ||
+          data?.data?.token ||
+          data?.accessToken ||
+          data?.token;
+        const refreshToken = data?.data?.refreshToken || data?.refreshToken;
+        if (token) {
+          saveTokens({ token, refreshToken });
+          setAuthReady(true);
+          fetchBalance();
+        }
+      })
+      .catch(() => {
+        // Silently fail — user can still browse; pay will retry auth if needed
+      });
+  }, []);
+
+  // ── Proactive token refresh every 25 minutes ──────────────────────────────
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (!isLoggedIn()) return;
+      DDIN.refreshToken()
+        .then(({ data }) => {
+          const token =
+            data?.data?.accessToken ||
+            data?.data?.token ||
+            data?.accessToken ||
+            data?.token;
+          const refreshToken = data?.data?.refreshToken || data?.refreshToken;
+          if (token) saveTokens({ token, refreshToken });
+        })
+        .catch(() => {
+          // If refresh fails, re-authenticate silently
+          clearTokens();
+          DDIN.login(AUTO_AUTH.username, AUTO_AUTH.password)
+            .then(({ data }) => {
+              const token =
+                data?.data?.accessToken ||
+                data?.data?.token ||
+                data?.accessToken ||
+                data?.token;
+              const refreshToken =
+                data?.data?.refreshToken || data?.refreshToken;
+              if (token) saveTokens({ token, refreshToken });
+            })
+            .catch(() => {});
+        });
+    }, 25 * 60 * 1000);
+    return () => clearInterval(id);
+  }, []);
 
   const fetchBalance = () => {
-    if (!isLoggedIn()) return;
     DDIN.getMainBalance()
       .then(({ data }) =>
         setBalance(data?.data?.balance ?? data?.balance ?? null),
       )
       .catch(() => {});
-  };
-
-  useEffect(() => {
-    fetchBalance();
-  }, [user]);
-
-  const handleLogout = () => {
-    clearTokens();
-    setUser(null);
-    setBalance(null);
-  };
-
-  const handleUserLogin = (loggedInUser) => {
-    setUser(loggedInUser);
-    fetchBalance();
   };
 
   const filtered = SERVICES.filter((s) => {
@@ -1596,62 +1353,28 @@ export default function DDINPaymentPage() {
                     DDIN payment services
                   </div>
                   <div style={{ fontSize: 12, color: "#6b6b67" }}>
-                    {user
-                      ? `Welcome, ${user.name}`
-                      : "Browse services below"}
+                    Browse and pay services below
                   </div>
                 </div>
               </div>
-              <div
-                style={{
-                  display: "flex",
-                  gap: 8,
-                  alignItems: "center",
-                  flexWrap: "wrap",
-                }}
-              >
-                {balance !== null && (
-                  <div
-                    style={{
-                      fontSize: 13,
-                      background: "#fafaf9",
-                      border: "0.5px solid #e0ddd7",
-                      borderRadius: 8,
-                      padding: "6px 12px",
-                      color: "#1a1a18",
-                    }}
-                  >
-                    Balance:{" "}
-                    <strong style={{ fontWeight: 500 }}>
-                      {Number(balance).toLocaleString()} RWF
-                    </strong>
-                  </div>
-                )}
-                {user && (
-                  <>
-                    <button
-                      onClick={() => setShowHistory(true)}
-                      style={{
-                        ...S.btn("transparent", "#6b6b67"),
-                        padding: "6px 12px",
-                        fontSize: 13,
-                      }}
-                    >
-                      History
-                    </button>
-                    <button
-                      onClick={handleLogout}
-                      style={{
-                        ...S.btn("transparent", "#A32D2D"),
-                        padding: "6px 12px",
-                        fontSize: 13,
-                      }}
-                    >
-                      Sign out
-                    </button>
-                  </>
-                )}
-              </div>
+
+              {balance !== null && (
+                <div
+                  style={{
+                    fontSize: 13,
+                    background: "#fafaf9",
+                    border: "0.5px solid #e0ddd7",
+                    borderRadius: 8,
+                    padding: "6px 12px",
+                    color: "#1a1a18",
+                  }}
+                >
+                  Balance:{" "}
+                  <strong style={{ fontWeight: 500 }}>
+                    {Number(balance).toLocaleString()} RWF
+                  </strong>
+                </div>
+              )}
             </div>
 
             {/* Search */}
@@ -1779,16 +1502,13 @@ export default function DDINPaymentPage() {
 
       <div className="clearfix" />
 
-      {/* ── Modals (rendered outside section so they're not clipped) ───── */}
+      {/* ── Payment modal ─────────────────────────────────────────────── */}
       {selectedService && (
         <PaymentModal
           service={selectedService}
           onClose={() => setSelectedService(null)}
-          onUserLogin={handleUserLogin}
+          authReady={authReady}
         />
-      )}
-      {showHistory && (
-        <HistoryModal onClose={() => setShowHistory(false)} />
       )}
     </>
   );
