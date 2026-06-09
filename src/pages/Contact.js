@@ -104,10 +104,7 @@ function Contact() {
     <div>
       {/* ============================ Breadcrumbs =========================== */}
       <section
-        className="bg-cover"
-        style={{ background: 'url(assets/img/banner.jpg) no-repeat' }}
-        data-overlay="4"
-      >
+        className="bg-cover">
         <div className="ht-80"></div>
         <div className="container">
           <div className="row">

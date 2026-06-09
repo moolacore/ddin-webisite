@@ -48,10 +48,7 @@ function About() {
         <div>
             {/* ============================ Breadcrumbs =========================== */}
             <section
-                className="bg-cover"
-                style={{ background: "#202A4E url(assets/img/banner.jpg) no-repeat" }}
-                data-overlay="9"
-            >
+                className="bg-cover">
                 <div className="ht-80"></div>
                 <div className="container">
                     <div className="row">

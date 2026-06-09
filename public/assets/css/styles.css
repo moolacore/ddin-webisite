@@ -1428,6 +1428,7 @@ div[data-overlay] p{
 .bg-cover{
     background-size: cover !important;
     background-position: center !important;
+    background: #202a4e
 }	
 .image-bg{
     background-size: cover !important;
@@ -4829,7 +4830,7 @@ footer.skin-dark-footer .footer-widget .ftp-info {
 		display: none;
 	}
 	.header.header-transparent {
-		background: transparent;
+		background: #202a4e;
 		position: absolute;
 		top: 0;
 		left: 0;
