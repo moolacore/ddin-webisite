@@ -1,4 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
+import { agentNetworkStats } from '../data/agentStats';
+import CountUp from '../components/CountUp';
 
 const slides = [
   {
@@ -10,32 +13,30 @@ const slides = [
       </>
     ),
     stats: [
-      { value: '4,200+', label: 'Current agent network' },
-      { value: '6,900+', label: 'Target network 2024' },
+      { value: agentNetworkStats.total, label: 'Registered agents' },
     ],
     image: 'assets/img/image_banner.png',
-    imageAlt: 'Agent network illustration',
+    imageAlt: 'Moola Plus agent services shown on a laptop and phone',
   },
   {
     bg: 'assets/img/banner2.jpg',
     heading: (
       <>
-        Unleash your competitive edge with our robust{' '}
-        <span style={{ color: '#F8882B' }}>agency network platform</span> that gives you
-        advantage over your rivals.
+        Handle everyday agent services with{' '}
+        <span style={{ color: '#F8882B' }}>Moola Plus</span> — from payments and balance checks
+        to transactions and commissions.
       </>
     ),
     stats: [],
-    image: 'assets/img/banner.png',
-    imageAlt: 'Platform illustration',
+    image: 'assets/img/image_banner.png',
+    imageAlt: 'Moola Plus agent services shown on a laptop and phone',
   },
   {
     bg: 'assets/img/banner2.jpg',
     heading: (
       <>
-        Join DDIN and connect with a{' '}
-        <span style={{ color: '#F8882B' }}>network of the best,</span> where excellence is the
-        standard and innovation drives success.
+        Join DDIN and serve customers in your community through a{' '}
+        <span style={{ color: '#F8882B' }}>nationwide network of independent agents.</span>
       </>
     ),
     stats: [],
@@ -113,7 +114,7 @@ function Banner() {
                             className="text-white"
                             style={{ fontSize: '1.8rem', fontWeight: 500 }}
                           >
-                            {stat.value}
+                            <CountUp value={stat.value} />
                           </div>
                           <div style={{ color: 'rgba(255,255,255,0.65)', fontSize: '0.85rem' }}>
                             {stat.label}
@@ -130,13 +131,13 @@ function Banner() {
                     >
                       How it works
                     </a>
-                    <a
-                      href="/became-an-agent"
+                    <Link
+                      to="/agent-registration"
                       className="btn btn-outline-light font--medium px-4 rounded-5"
                     >
                       Become an agent{' '}
                       <i className="fa-solid fa-circle-play ms-2"></i>
-                    </a>
+                    </Link>
                   </div>
                 </div>
 

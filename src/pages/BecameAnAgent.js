@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom';
 import AgentCount from './AgentCount'
 import Partners from './Partners'
 import CTA from './CTA'
@@ -14,7 +15,7 @@ function BecameAnAgent() {
             <div className="col-xl-8 col-lg-10 col-12">
               <h1 className="text-light mb-4">Unlock the power today <br />Network of the Best</h1>
               <p className="fs-5 fw-light text-light mb-4">Join now to be a part of our thriving community and take your journey to the next level</p>
-              <a href="/agent/profile" className="btn btn-primary px-5">Join Now...</a>
+              <Link to="/agent-registration" className="btn btn-primary px-5">Start your application</Link>
             </div>
           </div>
         </div>
@@ -113,7 +114,7 @@ function BecameAnAgent() {
 
               <div className="call-action-thumb d-lg-block d-none">
                 <div className="call-action-caption">
-                  <img src="/assets/img/mob-app.png" className="img-fluid" alt="img app" />
+                  <img src="/assets/img/mob-app.png" className="img-fluid" alt="Moola Plus on mobile devices" />
                 </div>
               </div>
 

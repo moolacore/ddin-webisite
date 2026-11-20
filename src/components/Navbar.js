@@ -38,7 +38,7 @@ function Navbar() {
             <div className="mobile_nav">
               <ul>
                 <li>
-                  <Link to="/became-an-agent" className="btn btn-info">
+                  <Link to="/agent-registration" className="btn btn-info">
                     <i className="fas fa-sign-in-alt me-2"></i>Become an Agent
                   </Link>
                 </li>
@@ -123,7 +123,7 @@ function Navbar() {
               </li>
 
               {/* Become an Agent */}
-              <li><Link to="/became-an-agent">Become an Agent</Link></li>
+              <li><Link to="/agent-registration">Become an Agent</Link></li>
               {/* Services */}
               <li><Link to="/services">Services</Link></li>
               {/* Contact */}
@@ -133,7 +133,7 @@ function Navbar() {
             {/* Right side - Join Now */}
             <ul className="nav-menu nav-menu-social align-to-right">
               <li className="list-buttons light ms-2">
-                <Link to="https://ee.kobotoolbox.org/x/a8ESAIFG" className="btn btn-info" target="_blank" rel="noopener noreferrer">
+                <Link to="/agent-registration" className="btn btn-info">
                   <i className="fas fa-sign-in-alt me-2"></i>Join Now
                 </Link>
               </li>

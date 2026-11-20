@@ -1,12 +1,6 @@
 import React from 'react';
-
-const provinceStats = [
-  { count: 1018, label: "Kigali City" },
-  { count: 807,  label: "Southern Province" },
-  { count: 771,  label: "Northern Province" },
-  { count: 682,  label: "Eastern Province" },
-  { count: 922,  label: "Western Province" },
-];
+import { agentNetworkStats } from '../data/agentStats';
+import CountUp from './CountUp';
 
 const services = [
   { label: "Agent Network Accelerator Program", href: "/agent_network_accelerator" },
@@ -29,7 +23,7 @@ const companyLinks = [
   { label: "Home",           href: "/" },
   { label: "About Us",       href: "/about" },
   { label: "Contact Us",     href: "/contact" },
-  { label: "Became an agent", href: "/became-an-agent" },
+  { label: "Become an agent", href: "/agent-registration" },
 ];
 
 const socials = [
@@ -118,11 +112,10 @@ function Footer() {
 
             <div className="col-xl-8 col-lg-8 col-md-8">
               <div className="job-info-count-group">
-                {provinceStats.map(({ count, label }) => (
+                {agentNetworkStats.provinces.map(({ count, label }) => (
                   <div className="single-jb-info-count" key={label}>
                     <div className="jbs-y7">
-                      <h5 className="ctr">{count}</h5>
-                      <span className="theme-2-cl">+</span>
+                      <h5 className="ctr"><CountUp value={count} /></h5>
                     </div>
                     <div className="jbs-y5">
                       <p>{label}</p>

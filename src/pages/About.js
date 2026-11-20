@@ -2,6 +2,8 @@ import React from 'react';
 import ServicesSection from './ServicesSection';
 import Partners from './Partners';
 import CTA from './CTA';
+import { agentNetworkStats } from '../data/agentStats';
+import CountUp from '../components/CountUp';
 
 const purposeCards = [
     {
@@ -53,7 +55,7 @@ function About() {
                 <div className="container">
                     <div className="row">
                         <div className="col-xl-8 col-lg-10 col-12">
-                            <h1 className="text-light mb-4">We're Here for<br />Solving your Solutions</h1>
+                            <h1 className="text-light mb-4">Connecting people<br />to essential services</h1>
                             <p className="fs-5 fw-light text-light mb-4">
                                 We unite a multitude of services from diverse institutions onto a single, user-friendly platform
                             </p>
@@ -87,12 +89,10 @@ function About() {
                                     </div>
                                     <h2 className="mb-3 lh-base">
                                         DDIN, Agent Network with{' '}
-                                        <span style={{ color: '#F8882B' }}>3000+ Experts</span>
+                                        <span style={{ color: '#F8882B' }}><CountUp value={agentNetworkStats.total} /> registered agents</span>
                                     </h2>
                                     <p className="mb-0 fs-5 fw-light">
-                                        DDIN is the number #1 leading agent network company in Rwanda with over 3000 experienced
-                                        representatives across the country. DDIN aggregates multiple services from different
-                                        institutions into one integrated platform.
+                                        DDIN manages a nationwide network of <CountUp value={agentNetworkStats.total} /> registered agents and connects services from different institutions on one integrated platform.
                                     </p>
                                     <div className="sml-butns mt-5">
                                         <a href="#" className="btn btn-light-warning font--medium rounded-5">
@@ -123,14 +123,12 @@ function About() {
                                     <div className="lios-vrst">
                                         <ul>
                                             {[
-                                                { count: 4200, label: 'Agent network' },
-                                                { count: 6900, label: 'Agent network targeting by 2024' },
+                                                { count: agentNetworkStats.total, label: 'Registered agents' },
                                             ].map(({ count, label }) => (
                                                 <li key={label}>
                                                     <div className="lios-parts mx-3">
                                                         <h2>
-                                                            <span className="ctr me-1">{count}</span>
-                                                            <span style={{ color: '#F8882B' }}>+</span>
+                                                            <CountUp className="ctr me-1" value={count} />
                                                         </h2>
                                                         <h6 className="text-muted">{label}</h6>
                                                     </div>

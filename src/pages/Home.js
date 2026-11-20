@@ -4,6 +4,8 @@ import ServicesSection from '../pages/ServicesSection';
 import Partners from '../pages/Partners';
 import CTA from '../pages/CTA';
 import DDINPaymentPage from '../pages/DDINPaymentPage';
+import { agentNetworkStats } from '../data/agentStats';
+import CountUp from '../components/CountUp';
 
 function Home() {
   return (
@@ -22,7 +24,7 @@ function Home() {
             <div className="col-xl-5 col-lg-5 col-md-6 col-sm-12">
               <div className="position-relative exloi">
                 <div className="position-relative">
-                  <img src="/assets/img/picture1.png" className="img-fluid" alt="Who we are" />
+                  <img src="/assets/img/mob-app.png" className="img-fluid" alt="Moola Plus agent services on mobile phones" />
                 </div>
               </div>
             </div>
@@ -34,7 +36,7 @@ function Home() {
                     <span>who we are</span>
                   </div>
                   <h2 className="mb-3 lh-base">
-                    Agent Network with <span style={{ color: '#F8882B' }}>4200+ Experts</span>
+                    Agent Network with <span style={{ color: '#F8882B' }}><CountUp value={agentNetworkStats.total} /> registered agents</span>
                   </h2>
                   <p className="mb-0 fs-5 fw-light">
                     DDIN serves as a management platform for a network of independent agents located
@@ -64,9 +66,8 @@ function Home() {
                     network companies in Rwanda
                   </h2>
                   <p className="mb-0 fw-light fs-5">
-                    DDIN stands as the top agent network company in Rwanda, boasting 4200+ seasoned
-                    representatives countrywide. We bring together a variety of services from various
-                    organizations onto a single, unified platform.
+                    DDIN connects a nationwide network of <CountUp value={agentNetworkStats.total} /> registered agents with services from different
+                    organizations on one platform.
                   </p>
                 </div>
               </div>
@@ -134,7 +135,7 @@ function Home() {
           <div className="row justify-content-between align-items-center mb-8">
             <div className="col-xl-5 col-lg-5 col-md-6 col-sm-12">
               <div className="position-relative exloi">
-                <img src="/assets/img/image_banner.png" className="img-fluid" alt="Integration" />
+                <img src="/assets/img/image_banner.png" className="img-fluid" alt="Moola Plus displayed on a laptop and phone" />
               </div>
             </div>
 
@@ -142,16 +143,18 @@ function Home() {
               <div className="position-relative exloi mt-md-0 mt-4">
                 <div className="exloi-caption">
                   <div className="label text-success bg-light-success d-inline-flex rounded-4 mb-2 font--medium">
-                    <span>integration</span>
+                    <span>Moola Plus</span>
                   </div>
                   <h2 className="mb-3 lh-base">
-                    DDIN aggregates <span style={{ color: '#F8882B' }}>multiple services</span> from
-                    different institutions into{' '}
-                    <span style={{ color: '#F8882B' }}>one integrated platform.</span>
+                    One portal for everyday{' '}
+                    <span style={{ color: '#F8882B' }}>agent services and account tools.</span>
                   </h2>
+                  <p className="mb-0 fs-5 fw-light">
+                    Moola Plus brings service payments, balance checks, transaction history and agent tools together in one place.
+                  </p>
                   <div className="sml-butns mt-5">
-                    <a href="#" className="btn btn-light-success font--medium rounded-5">
-                      Learn more <i className="fa-regular fa-circle-right ms-2"></i>
+                    <a href="/agent_network_management" className="btn btn-light-success font--medium rounded-5">
+                      Explore agent network management <i className="fa-regular fa-circle-right ms-2"></i>
                     </a>
                   </div>
                 </div>
@@ -180,7 +183,7 @@ function Home() {
 
             <div className="col-xl-5 col-lg-5 col-md-6 col-sm-12">
               <div className="position-relative exloi mt-md-0 mt-4">
-                <img src="/assets/img/mob-app.png" className="img-fluid" alt="Mobile App" />
+                <img src="/assets/img/mob-app.png" className="img-fluid" alt="Moola Plus mobile services and navigation" />
               </div>
             </div>
           </div>

@@ -2,6 +2,12 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## DDIN agent registration
+
+The registration page reads its questions from the DDIN KoboToolbox form and submits applications through the Express server in `server/`. Set `KOBO_API_TOKEN`, `KOBO_ASSET_UID`, `KOBO_USERNAME`, `KOBO_FORM_ID`, and `KOBO_FORM_UUID` as server environment variables. For local work, copy `.env.example` to `.env.local` and add a valid token; never place the token in a `REACT_APP_` variable.
+
+For local development, run `npm run server` and `npm start` in separate terminals. For deployment, run `npm run build` and start the built website and registration API with `npm run serve`. The hosting environment must support a long-running Node.js server and should terminate public traffic over HTTPS.
+
 ## Available Scripts
 
 In the project directory, you can run:

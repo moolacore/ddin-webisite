@@ -15,6 +15,7 @@ import BTLPage from "./pages/BTLPage";
 import CANPage from "./pages/CANPage";
 import DistributionPage from "./pages/DistributionPage";
 import FloatManagementPage from "./pages/FloatManagementPage";
+import AgentRegistration from './pages/AgentRegistration';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/became-an-agent" element={<BecameAnAgent />} />
+        <Route path="/agent-registration" element={<AgentRegistration />} />
         <Route path="*" element={<NotFound />} />
         <Route path="/services/*" element={<DDINPaymentPage />} /> {/* Services page with nested routes */}
         <Route path="/dashboard/*" element={<Dashboard />} /> {/* Dashboard page with nested routes */}
