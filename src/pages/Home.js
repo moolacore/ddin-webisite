@@ -13,7 +13,7 @@ function Home() {
       <Banner />
 
       {/* ====== Pay Services ====== */}
-      <DDINPaymentPage />
+      {/* <DDINPaymentPage /> */}
 
       {/* ====== Who We Are ====== */}
       <section className="pt-8">

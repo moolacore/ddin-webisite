@@ -5,7 +5,7 @@ function AgentCount() {
   return (
     <>
       <section>
-        <div className="container">
+        <div className="container" style={{ transform: 'translateX(100px)' }}>
           <div className="row align-items-center">
 
             {/* Heading */}
